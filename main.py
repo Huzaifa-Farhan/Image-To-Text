@@ -32,22 +32,36 @@ OCR Engine Mode
 3 Default, based on what is available.
 """
 
+
+# Configuration for Tesseract
 myconfig = r"--psm 3 --oem 3"
-img = cv2.imread("text.jpg")
-height, width, _ = img.shape
 
-data = pytesseract.image_to_data(img, config=myconfig, output_type=Output.DICT)
-amount_boxes = len(data['text'])
+# Load the image (put the full path of the image)
+img = cv2.imread(r"D:\\Ontario Tech University\\GitHub Assignments\\Image-To-Text\\text.jpg")
 
-for i in range (amount_boxes):
-    if float(data['conf'][i]) > 80:
-        (x, y, width, height) = (data['left'][i], data['top'][i], data['width'][i], data['height'][i])
-        img = cv2.rectangle(img, (x, y), (x+width, y+height), (0,255,0), 2)
-        img = cv2.putText(img, data['text'][i], (x, y+height+20), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,0,255),2,cv2.LINE_8)
-                                                                                          
-text = pytesseract.image_to_string(img)
-print(text)
 
-cv2.imshow("Image Window", img)
-cv2.waitKey(0)
-cv2.destroyAllWindows
+# Check if the image was loaded successfully
+if img is None:
+    print("Error: Image file not found or could not be opened.")
+else:
+    height, width, _ = img.shape
+
+    # Extract text data
+    data = pytesseract.image_to_data(img, config=myconfig, output_type=Output.DICT)
+    amount_boxes = len(data['text'])
+
+    # Draw rectangles around detected text
+    for i in range(amount_boxes):
+        if float(data['conf'][i]) > 80:
+            (x, y, w, h) = (data['left'][i], data['top'][i], data['width'][i], data['height'][i])
+            img = cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            img = cv2.putText(img, data['text'][i], (x, y + h + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2, cv2.LINE_AA)
+
+    # Extract and print the text from the original image
+    text = pytesseract.image_to_string(img, config=myconfig)
+    print(text)
+
+    # Display the image with annotations
+    cv2.imshow("Image Window", img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()  # Corrected the function call
